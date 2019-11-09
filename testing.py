@@ -1,19 +1,6 @@
 import pygame
 import random
 
-screen_width, screen_height = 500, 500
-gridSize = 20
-
-window = pygame.display.set_mode((screen_width, screen_height)) #gives us a sick as heck window
-pygame.display.set_caption("SNEK!") #gives the window a caption
-
-#grid sizes!
-width = 20
-height = width
-
-#snek move snapping!
-vel = width
-
 class Cube():
 
     def __init__(self, x, y, color):
@@ -26,7 +13,8 @@ class Cube():
         self.y = newY
     
     def draw(self, window):
-        pygame.draw.rect(window, self.color, (self.x, self.y, width, height))
+        global gridSize
+        pygame.draw.rect(window, self.color, (self.x, self.y, gridSize, gridSize))
 
 
 class Snek():
@@ -41,12 +29,12 @@ class Snek():
             self.grow(x-(20*i), y)
 
     def move(self):
-        global apple
-        moved = False
-        oldx, oldy = self.head.x, self.head.y
+        global apple, gridSize
+        oldHeadX, oldHeadY = self.head.x, self.head.y
         oldTailX, oldTailY = 0, 0
         if len(self.body) > 0:
             oldTailX, oldTailY = self.body[0].x, self.body[0].y
+        
         keys = pygame.key.get_pressed()
 
         #grid starts at top left of the screen
@@ -66,21 +54,13 @@ class Snek():
             self.yvel = 1
 
         if self.xvel != 0:
-            temp = self.head.x + (self.xvel * vel)
+            temp = self.head.x + (self.xvel * gridSize)
             collide = self.willCollide(temp, self.head.y)
-            if self.xvel < 0 and -1 < temp and (not collide):
-                moved = True
-            if self.xvel > 0 and (temp + width) <= screen_width and (not collide):
-                moved = True
         if self.yvel != 0:
-            temp = self.head.y + (self.yvel * vel)
+            temp = self.head.y + (self.yvel * gridSize)
             collide = self.willCollide(self.head.x, temp)
-            if self.yvel < 0 and temp > -1 and (not collide):
-                moved = True
-            if self.yvel > 0 and (temp + height) <= screen_height and (not collide):
-                moved = True
         
-        if moved:
+        if not collide:
             for i, cube in enumerate(self.body):
                 if i == len(self.body) - 1:
                     cube.x = self.head.x
@@ -94,7 +74,10 @@ class Snek():
                 self.head.y = temp
 
             if self.head.x == apple.x and self.head.y == apple.y:
-                self.grow(oldTailX, oldTailY)
+                if len(self.body) > 0:
+                    self.grow(oldTailX, oldTailY)
+                else:
+                    self.grow(oldHeadX, oldHeadY)
                 spawnRandomApple()
             
         return collide
@@ -103,8 +86,9 @@ class Snek():
         self.body.insert(0, Cube(x, y, self.color))
 
     def willCollide(self, newX, newY):
-        collide = False
-        collide = (0 <= newX <= screen_width) and (0 <= newY <= screen_height)
+        global screen_size
+        valid = (0 <= newX < screen_size) and (0 <= newY < screen_size)
+        collide = not valid
         if not collide:
             for cube in self.body:
                 if cube.x == newX and cube.y == newY:
@@ -119,34 +103,34 @@ class Snek():
             cube.draw(window)
 
 def spawnRandomApple():
-    global noodle
+    global apple, noodle, screen_size, gridSize
     color = (255,0,0)
-    rows = screen_width // width
+    rows = screen_size // gridSize
     x, y = 0, 0
 
     valid = False
     while not valid:
-        x = random.randrange(rows) * width
-        y = random.randrange(rows) * width
+        x = random.randrange(rows) * gridSize
+        y = random.randrange(rows) * gridSize
 
         valid = not noodle.willCollide(x, y)
         valid = noodle.head.x != x and noodle.head.y != y
 
-    global apple
     apple = Cube(x, y, color)
 
 #main loo!
 def drawGrid(window):
+    global screen_size, gridSize
     color = (150,150,150)
     x, y = 0, 0
-    rows = screen_width // width
+    rows = screen_size // gridSize
 
     for i in range(rows):
-        x += width
-        y += width
+        x += gridSize
+        y += gridSize
 
-        pygame.draw.line(window, color, (x,0), (x, screen_width))
-        pygame.draw.line(window, color, (0,y), (screen_width, y))
+        pygame.draw.line(window, color, (x,0), (x, screen_size))
+        pygame.draw.line(window, color, (0,y), (screen_size, y))
 
 def drawGame(window):
     global noodle, apple
@@ -156,10 +140,19 @@ def drawGame(window):
     drawGrid(window)
     pygame.display.update()
 
+
 def main():
-    global noodle
+    global noodle, gridSize, screen_size
+
+    screen_size = 1000
+    gridSize = 25
+
+    pygame.display.set_caption("SNEK!") #gives the window a caption
+
+    window = pygame.display.set_mode((screen_size, screen_size)) #gives us a sick as heck window
     noodle = Snek(100, 100, (0, 255, 0), 1)
     spawnRandomApple()
+
     clock = pygame.time.Clock()
     run = True
     while run:
