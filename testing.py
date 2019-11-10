@@ -1,6 +1,41 @@
 import pygame
 import random
 
+class Movement():
+
+    def getDirection():
+        pass
+
+class PygameMovement(Movement):
+
+    def getDirection(self):
+        keys = pygame.key.get_pressed()
+        temp = 0
+        if keys[pygame.K_LEFT]:
+            return "LEFT"
+        if keys[pygame.K_RIGHT]:
+            return "RIGHT"
+        if keys[pygame.K_UP]:
+            return "UP"
+        if keys[pygame.K_DOWN]:
+            return "DOWN"
+
+class TextMovement(Movement):
+
+    def __init__(self):
+        self.buffer = []
+        self.fillBuffer()
+
+    def fillBuffer(self):
+        with open('./input.txt', 'r') as file:
+            for line in file:
+                for ch in line:
+                    self.buffer.append(ch)
+
+    def getDirection(self):
+        with open('./input.txt', 'r') as file:
+            input = file.readLine();
+
 class Cube():
 
     def __init__(self, x, y, color):
@@ -19,12 +54,13 @@ class Cube():
 
 class Snek():
 
-    def __init__(self, x, y, color, startingSize=2):
+    def __init__(self, x, y, color, startingSize=2, movement=PygameMovement()):
         self.color = color
         self.head = Cube(x, y, self.color)
         self.body = []
         self.xvel = 1
         self.yvel = 0
+        self.movement = movement
         for i in (range(startingSize - 1)):
             self.grow(x-(20*i), y)
 
@@ -40,18 +76,31 @@ class Snek():
         #grid starts at top left of the screen
         collide = False
         temp = 0
-        if keys[pygame.K_LEFT]:
+        direction = self.movement.getDirection()
+        if direction == "LEFT":
             self.xvel = -1
             self.yvel = 0
-        if keys[pygame.K_RIGHT]:
+        if direction == "RIGHT":
             self.xvel = 1
             self.yvel = 0
-        if keys[pygame.K_UP]:
+        if direction == "UP":
             self.xvel = 0
             self.yvel = -1
-        if keys[pygame.K_DOWN]:
+        if direction == "DOWN":
             self.xvel = 0
             self.yvel = 1
+        # if keys[pygame.K_LEFT]:
+        #     self.xvel = -1
+        #     self.yvel = 0
+        # if keys[pygame.K_RIGHT]:
+        #     self.xvel = 1
+        #     self.yvel = 0
+        # if keys[pygame.K_UP]:
+        #     self.xvel = 0
+        #     self.yvel = -1
+        # if keys[pygame.K_DOWN]:
+        #     self.xvel = 0
+        #     self.yvel = 1
 
         if self.xvel != 0:
             temp = self.head.x + (self.xvel * gridSize)
