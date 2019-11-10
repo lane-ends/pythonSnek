@@ -25,6 +25,7 @@ class TextMovement(Movement):
     def __init__(self):
         self.buffer = []
         self.fillBuffer()
+        self.index = 0
 
     def fillBuffer(self):
         with open('./input.txt', 'r') as file:
@@ -33,8 +34,16 @@ class TextMovement(Movement):
                     self.buffer.append(ch)
 
     def getDirection(self):
-        with open('./input.txt', 'r') as file:
-            input = file.readLine();
+        direction = self.buffer[self.index]
+        self.index = (self.index + 1) % len(self.buffer)
+        if direction == "L":
+            return "LEFT"
+        if direction == "R":
+            return "RIGHT"
+        if direction == "U":
+            return "UP"
+        if direction == "D":
+            return "DOWN"
 
 class Cube():
 
@@ -89,18 +98,6 @@ class Snek():
         if direction == "DOWN":
             self.xvel = 0
             self.yvel = 1
-        # if keys[pygame.K_LEFT]:
-        #     self.xvel = -1
-        #     self.yvel = 0
-        # if keys[pygame.K_RIGHT]:
-        #     self.xvel = 1
-        #     self.yvel = 0
-        # if keys[pygame.K_UP]:
-        #     self.xvel = 0
-        #     self.yvel = -1
-        # if keys[pygame.K_DOWN]:
-        #     self.xvel = 0
-        #     self.yvel = 1
 
         if self.xvel != 0:
             temp = self.head.x + (self.xvel * gridSize)
@@ -170,7 +167,7 @@ def spawnRandomApple():
 #main loo!
 def drawGrid(window):
     global screen_size, gridSize
-    color = (150,150,150)
+    color = (100,100,100)
     x, y = 0, 0
     rows = screen_size // gridSize
 
@@ -193,13 +190,17 @@ def drawGame(window):
 def main():
     global noodle, gridSize, screen_size
 
-    screen_size = 1000
-    gridSize = 25
+    screen_size = 2000
+    gridSize = 10
+    startX = screen_size // 2
+    startY = screen_size // 2
+    startingSize = 4
 
     pygame.display.set_caption("SNEK!") #gives the window a caption
 
     window = pygame.display.set_mode((screen_size, screen_size)) #gives us a sick as heck window
-    noodle = Snek(100, 100, (0, 255, 0), 1)
+    #make our character : ) our NOODLE!!!!!!! his name is shankie (cus hell stab u)
+    noodle = Snek(startX, startY, (0, 255, 0), startingSize, TextMovement())
     spawnRandomApple()
 
     clock = pygame.time.Clock()
@@ -213,7 +214,6 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-        #make our character : ) our NOODLE!!!!!!! his name is shankie (cus hell stab u)
         drawGame(window)
 
     #cordell is the best. i am endlessly thankful for our friendship. <3 UWU
